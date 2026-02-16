@@ -51,7 +51,7 @@ public:
 
     bool empty() const
     {
-        return _size == 0;
+        return _head == nullptr;
     }
 
     int tail() const 
@@ -206,8 +206,10 @@ public:
             _size--;
         }
 
-        beforeStart->Next = curr;
+        if (beforeStart == nullptr)
+            throw logic_error("Error while removing element");
 
+        beforeStart->Next = curr;
         _head = dummy.Next;
     }
 
@@ -245,6 +247,33 @@ public:
         insert(other, idx);
     }
 
+    // obviously does not use _size
+    int find_middle_element() const
+    {
+        if (empty())
+            throw logic_error("List is empty");
+
+        Node* slow = _head;
+        Node* fast = _head;
+
+        while (fast != nullptr && fast->Next != nullptr)
+        {
+            slow = slow->Next;
+            fast = fast->Next->Next;
+        }
+
+        // Defensive null-check to satisfy static analysis tools.
+        if (slow == nullptr)
+            throw logic_error("List is empty");
+
+        return slow->X;
+    }
+
+    /* Cool exercises with singly linked lists include  
+    detecting cycles using Floyd’s Cycle-Finding Algorithm, 
+    finding the middle element in one pass, merging two sorted lists, 
+    and reordering lists in zig-zag fashion.*/
+
 private:
     Node* get_node(unsigned int idx) const
     {
@@ -270,16 +299,17 @@ int main()
 
     v.clear();
 
-    int len = 10;
+    int len = 7;
     int len2 = 4;
 
     SinglyLinkedList list = SinglyLinkedList(len);
     SinglyLinkedList list2 = SinglyLinkedList(len2);
 
-    cout << list.size() << " " << list2.size() << endl;
+    cout << "List 1 size(): " << list.size() << "; List2 size(): " << list2.size() << endl;
 
     list.print();
-    list[5] = 8927349;
+    cout << "Middle element: " << list.find_middle_element() << endl;
+    
     list.print();
     //list.insert(list2, list.size());
     list += list2;
