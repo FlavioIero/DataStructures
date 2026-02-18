@@ -1,7 +1,8 @@
 #include <iostream>
 #include <cstdlib>
-#include <vector>
+#include <vector> // not necessary, only to copy names and behaviors
 #include <set>
+#include <ctime> // just for tests
 using namespace std;
 
 
@@ -38,6 +39,41 @@ public:
         }
 
         _size = len;
+    }
+
+    SinglyLinkedList(const SinglyLinkedList& other)
+    {
+        _head = nullptr;
+        _size = 0;
+
+        Node* curr = other._head;
+        while (curr)
+        {
+            push_back(curr->x);
+            curr = curr->next;
+        }
+    }
+
+    SinglyLinkedList& operator=(const SinglyLinkedList& other)
+    {
+        if (this == &other)
+            return *this;
+
+        clear();
+
+        Node* curr = other._head;
+        while (curr)
+        {
+            push_back(curr->x);
+            curr = curr->next;
+        }
+
+        return *this;
+    }
+
+    ~SinglyLinkedList()
+    {
+        clear();
     }
 
 #pragma region getters
@@ -117,31 +153,45 @@ public:
         _size++;
     }
 
-    void insert(SinglyLinkedList other, unsigned int idx)
+    void insert(const SinglyLinkedList& other, unsigned int idx)
     {
-        unsigned int otherSize = other.size();
-
-        if (other.size() == 0)
+        if (other.empty())
             return;
 
-        Node* otherTail = otherSize == 1 ? other._head : other.get_node(otherSize - 1);
+        if (idx > _size)
+            throw out_of_range("Index out of range");
 
-        if (idx == 0)
+        Node dummy{ 0, _head };
+        Node* prev = &dummy;
+
+        for (unsigned int i = 0; i < idx; i++)
+            prev = prev->next;
+
+        Node* currOther = other._head;
+
+        Node* firstInserted = nullptr;
+        Node* lastInserted = nullptr;
+
+        while (currOther)
         {
-            Node* prevHead = _head;
-            _head = other._head;
-            otherTail->next = prevHead;
-        }
-        else
-        {
-            Node* prev = get_node(idx - 1);
-            Node* next = prev->next;
-            prev->next = other._head;
-            otherTail->next = next;
+            Node* newNode = new Node{ currOther->x, nullptr };
+
+            if (!firstInserted)
+                firstInserted = newNode;
+            else
+                lastInserted->next = newNode;
+
+            lastInserted = newNode;
+            currOther = currOther->next;
         }
 
-        _size += otherSize;
+        lastInserted->next = prev->next;
+        prev->next = firstInserted;
+
+        _head = dummy.next;
+        _size += other._size;
     }
+
 
     void push_front(int x)
     {
@@ -242,7 +292,7 @@ public:
         return get_node(idx)->x;
     }
 
-    void operator+=(SinglyLinkedList other)
+    void operator+=(const SinglyLinkedList& other)
     {
         int idx = _size - 1 >= 0 ? _size : 0;
         insert(other, idx);
@@ -306,12 +356,12 @@ public:
     }
 
 #pragma region static_methods
-    static SinglyLinkedList* merge_sorted_lists(SinglyLinkedList* l1, SinglyLinkedList* l2)
+    static SinglyLinkedList merge_sorted_lists(SinglyLinkedList* l1, SinglyLinkedList* l2)
     {
         if ((l1 == nullptr || l1->empty()) && (l2 == nullptr || l2->empty()))
-            return nullptr;
+            return NULL;
 
-        SinglyLinkedList* res = new SinglyLinkedList();
+        SinglyLinkedList res = SinglyLinkedList();
         Node* beforeHead = new Node();
         Node* curr = beforeHead;
 
@@ -348,8 +398,8 @@ public:
         }
 
         unsigned int size = l1->_size + l2->_size;
-        res->_head = beforeHead->next;
-        res->_size = size;
+        res._head = beforeHead->next;
+        res._size = size;
 
         delete beforeHead;
 
@@ -363,26 +413,131 @@ public:
         if (empty())
             return;
 
-        Node* prev = nullptr;
-        Node* curr = _head;
-        Node* next = nullptr;
+        Node* prev = _head;
+        Node* curr = prev->next;
         std::set<int> nums = { _head->x };
 
-        while (curr->next != nullptr)
+        while (curr)
         {
-            if (nums.find(curr->next->x) == nums.end())
+            Node* next = curr->next;
+
+            if (nums.find(curr->x) == nums.end())
             {
-                nums.insert(curr->next->x);
-                curr = curr->next;
+                nums.insert(curr->x);
+                prev = curr;
+                curr = next;
             }
             else
             {
-                Node* temp = curr->next;
-                curr->next = curr->next->next;
+                Node* temp = curr;
+                curr = next;
+                prev->next = curr;
                 delete temp;
+                _size--;
             }
         }
     }
+
+    // doesnt work if head is a duplicate
+    // it's purposely bad, just to solve the 
+    // cases where head isn't a duplicate
+    void deleteDuplicates()
+    {
+        if (empty())
+            return;
+        if (_head->next == nullptr)
+            return;
+
+        Node dummy = Node{ 0, _head };
+        Node* prev = &dummy;
+        prev = prev->next;
+        Node* beforeCurr = prev;
+        Node* curr = prev->next;
+
+        while (curr)
+        {
+            if (curr->next == nullptr)
+            {
+                break;
+            }
+            // nahh
+            if (prev->x == curr->x)
+            {
+                beforeCurr = curr;
+                curr = curr->next;
+                continue;
+            }
+            else
+            {
+                if (beforeCurr->x != curr->x && curr->x != curr->next->x)
+                {
+                    Node* tempPrev = prev;
+                    while (prev->next != curr)
+                    {
+                        Node* temp = prev->next;
+                        prev->next = prev->next->next;
+                        delete temp;
+                    }
+                    prev = curr;
+                    beforeCurr = prev;
+                    tempPrev->next = prev;
+                    curr = curr->next;
+                }
+                else
+                {
+                    beforeCurr = curr;
+                    curr = curr->next;
+                    continue;
+                }
+            }
+        }
+
+
+        // link prev to beforeCurr
+        if (beforeCurr->x != curr->x)
+        {
+            Node* tempPrev = prev;
+            while (prev->next != curr)
+            {
+                Node* temp = prev->next;
+                prev->next = prev->next->next;
+                delete temp;
+            }
+            tempPrev->next = curr;
+            prev = curr;
+        }
+
+        // if not linked it means there are
+        // duplicate nodes from prev->next to tail
+        while (prev->next)
+        {
+            Node* temp = prev->next;
+            prev->next = prev->next->next;
+            delete temp;
+        }
+
+        _head = dummy.next;
+    }
+
+#pragma region testing_methods
+    void randomize_values(int minVal = 100, int maxVal = -100)
+    {
+        if (empty())
+            return;
+
+        if (minVal > maxVal)
+            swap(minVal, maxVal);
+
+        Node* curr = _head;
+
+        while (curr)
+        {
+            int r = minVal + rand() % (maxVal - minVal + 1);
+            curr->x = r;
+            curr = curr->next;
+        }
+    }
+#pragma endregion
 
     /* Cool exercises with singly linked lists include  
     detecting cycles using Floyd’s Cycle-Finding Algorithm,
@@ -408,7 +563,15 @@ private:
 
 int main()
 {
-    vector<int> v = vector<int> { 3, 2, 2, 3 };
+    srand(time(0));
+
+    vector<int>* v = new vector<int> { 3, 2, 2, 3 };
+    (*v)[2] = 9;
+    for (int x : *v)
+    {
+        cout << x << ", ";
+    }
+    cout << endl;
 
     int len = 7;
     int len2 = 4;
@@ -422,13 +585,11 @@ int main()
     cout << "Middle element: " << list.find_middle_element() << endl;
     
     list.print();
-    //list.insert(list2, list.size());
-    list += list2;
+
     list.print();
 
     //list.selection_sort(false);
     list.print();
-
 
     cout << "List1: " << endl;
     list.selection_sort();
@@ -436,13 +597,15 @@ int main()
     cout << "List2: " << endl;
     list.selection_sort();
     list2.print();
-    SinglyLinkedList* mergedList = SinglyLinkedList::merge_sorted_lists(&list, &list2);
+    SinglyLinkedList mergedList = SinglyLinkedList::merge_sorted_lists(&list, &list2);
     cout << "Merged list: " << endl; 
-    mergedList[1] = 99;
-    mergedList[mergedList->size() - 1] = 99;
-    mergedList->print();
-    mergedList->delete_duplicates();
-    mergedList->print();
+    mergedList.print();
+    cout << "Randomizing mergeList values..." << endl;
+    mergedList.randomize_values(3, -3);
+    mergedList.print();
+    cout << "Deleting suplicates..." << endl;
+    mergedList.delete_duplicates();
+    mergedList.print();
 
     return 0;
 }
