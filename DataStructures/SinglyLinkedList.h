@@ -19,8 +19,6 @@ private:
     Node* _head = nullptr;
     unsigned int _size = 0;
 
-    Node* get_node(unsigned int idx) const;
-
 public:
     SinglyLinkedList();
     SinglyLinkedList(unsigned int len);
@@ -101,4 +99,7 @@ public:
     // sets a random value between a range for every element in the list
     void randomize_values(int minVal = 10, int maxVal = -10);
 #pragma endregion
+
+private: 
+    Node* get_node(unsigned int idx) const;
 };

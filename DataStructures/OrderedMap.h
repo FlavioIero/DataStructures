@@ -15,24 +15,24 @@ private:
 		Node* right;
 
 		Node(Key k = Key{}, Value v = Value{}, Node* l = nullptr, Node* r = nullptr)
-			: key(k), value(v), left(l), right(r)
-		{
-		}
+			: key(k), value(v), left(l), right(r) {}
 	};
 
 	Node* _root;
 	unsigned int _size;
 
-	int sum(const Node* n) const
-	{
-		if (!n)
-			return 0;
-		return sum(n->left) + n->value + sum(n->right);
-	}
-
 public:
 	OrderedMap() : _root(nullptr), _size(0) {}
 
+	inline bool empty() const
+	{
+		return _root == nullptr;
+	}
+
+	inline int size() const
+	{
+		return _size;
+	}
 
 	Value get(Key key) const
 	{
@@ -53,11 +53,6 @@ public:
 		throw out_of_range("Key not found");
 	}
 
-	bool empty() const
-	{
-		return _root == nullptr;
-	}
-
 	void insert(Key key, Value value)
 	{
 
@@ -67,11 +62,4 @@ public:
 	{
 
 	}
-
-	Value sum_all_nodes() const
-	{
-		return sum(_root);
-	}
 };
-
-

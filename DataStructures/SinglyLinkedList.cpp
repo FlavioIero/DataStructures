@@ -52,27 +52,14 @@ SinglyLinkedList& SinglyLinkedList::operator=(const SinglyLinkedList& other)
         curr = curr->next;
     }
 
+    _size = other._size;
+
     return *this;
 }
 
 SinglyLinkedList::~SinglyLinkedList()
 {
     clear();
-}
-
-SinglyLinkedList::Node* SinglyLinkedList::get_node(unsigned int idx) const
-{
-    if (idx >= _size)
-        throw out_of_range("Index out of range");
-
-    Node* curr = _head;
-
-    for (unsigned int i = 0; i < idx; i++)
-    {
-        curr = curr->next;
-    }
-
-    return curr;
 }
 
 #pragma region getters
@@ -549,3 +536,18 @@ void SinglyLinkedList::randomize_values(int minVal, int maxVal)
     }
 }
 #pragma endregion
+
+SinglyLinkedList::Node* SinglyLinkedList::get_node(unsigned int idx) const
+{
+    if (idx >= _size)
+        throw out_of_range("Index out of range");
+
+    Node* curr = _head;
+
+    for (unsigned int i = 0; i < idx; i++)
+    {
+        curr = curr->next;
+    }
+
+    return curr;
+}

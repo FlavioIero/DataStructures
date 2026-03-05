@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BinarySearchTree.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="SinglyLinkedList.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BinarySearchTree.h" />
     <ClInclude Include="OrderedMap.h" />
     <ClInclude Include="SinglyLinkedList.h" />
   </ItemGroup>
